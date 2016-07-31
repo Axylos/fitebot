@@ -2,6 +2,7 @@ sqlite = require 'sqlite3'
 db = new sqlite.Database "fite.db"
 util = require "util"
 queries = require './sql_queries.coffee'
+printer = require './fite_printer.coffee'
 
 Deferred = require('promise.coffee').Deferred
 
@@ -15,21 +16,56 @@ module.exports = (robot) ->
       resp = queries.get_latest().then (data) ->
           data = data[0]
           resp = util.format 'This is the "%s" Fite!  It expires on %s!', data.description, data.expires_on
-          res.reply resp
+
+          fulfilled = (fites) ->
+              fite_table = printer.print_fites(fites)
+              resp_string = resp + '\n' + fite_table
+
+              res.reply resp_string
+
+          rejected = (err) ->
+              res.reply err
+
+          queries.get_current_fites().then fulfilled, rejected
+
 
   robot.hear /insert it/i, (res) ->
       ins_query()
       res.reply 'done'
 
-  robot.hear /activate list (\d)/i, (res) ->
-      promise = queries.activate_list res.match[1]
-      promise.then (data) ->
+  robot.hear /get pending list/i, (res) ->
+      fulfilled = (data) ->
+          res.reply JSON.stringify data
+          queries.get_pending_fites().then (fites) ->
+              res.reply printer.print_fites(fites)
+      rejected = (err) ->
+          res.reply err
+
+      queries.get_pending_list().then fulfilled, rejected
+
+  robot.hear /get pending fites/i, (res) ->
+      fulfilled = (data) ->
+          res.reply printer.print_fites(data)
+      rejected = (err) ->
+          res.reply err
+
+      queries.get_pending_fites().then fulfilled, rejected
+
+
+  robot.hear /activate list/i, (res) ->
+      fulfilled = (data) ->
           res.reply data
+      rejected = (err) ->
+          res.reply err
+
+      queries.activate_list().then fulfilled, rejected
 
   robot.hear /make list "(.*)"/i, (res) ->
-      promise = queries.new_list res.match[1]
-      promise.then (data) ->
+      fulfilled = (data) ->
           res.reply data
+      rejected = (err) ->
+          res.reply err
+      queries.new_list(res.match[1]).then fulfilled, rejected
 
 
   robot.hear /get all/i, (res) ->
@@ -48,12 +84,27 @@ module.exports = (robot) ->
       left = res.match[1]
       right = res.match[2]
 
-      (queries.add_fite left, right).then (data) ->
-          res.reply(data)
+      fulfilled = (data) ->
+          res.reply data
+
+      rejected = (err) ->
+          res.reply err
+
+      queries.add_fite(left, right).then fulfilled, rejected
 
   robot.hear /vacuum fites/i, (res) ->
       queries.vacuum_fites().then (data) ->
           res.reply data
+
+  robot.hear /vacuum inactive lists/i, (res) ->
+      fulfilled = (data) ->
+          res.reply data
+
+      rejected = (err) ->
+          res.reply err
+
+      queries.vacuum_lists().then  fulfilled, rejected
+
 
   robot.hear /simsalabimbamba saladu saladim/i, (res) ->
       user = res.message.user

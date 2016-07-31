@@ -19,7 +19,8 @@
     "hubot-shipit": "^0.2.0",
     "hubot-slack": "^4.0.1",
     "sqlite3": "^3.1.4",
-    "promise.coffee": "^1.0.6"
+    "promise.coffee": "^1.0.6",
+    "cli-table2": "0.2.0"
   },
   "engines": {
     "node": "0.10.x"

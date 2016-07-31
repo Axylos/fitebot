@@ -2,7 +2,8 @@ CREATE TABLE fitelist(
     listid  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     description   VARCHAR(255),
-    expires_on  DATETIME NOT NULL
+    expires_on  DATETIME NOT NULL,
+    is_active BOOLEAN DEFAULT 0 NOT NULL
 );
 
 CREATE TABLE fite(
