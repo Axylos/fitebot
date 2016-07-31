@@ -47,7 +47,8 @@ list_query = "SELECT * FROM fitelist;"
 get_latest_query = "SELECT * FROM fitelist where is_active = 1 AND expires_on > datetime('now') ORDER BY listid DESC LIMIT 1;"
 
 activate_list_bit = () ->
-    insert_wrapper util.format("UPDATE fitelist SET is_active = 1, expires_on = (%s) WHERE listid = (%s)", time_query, pending_listid_query)
+    insert_wrapper("UPDATE fitelist SET is_active = 0;").then (data) ->
+        insert_wrapper util.format("UPDATE fitelist SET is_active = 1, expires_on = (%s) WHERE listid = (%s)", time_query, pending_listid_query)
 
 activate_list_fn = () ->
     console.log 'activa lister'
@@ -143,7 +144,7 @@ get_pending_fites = () ->
   query_wrapper(util.format "SELECT * FROM fite WHERE fitelist = (%s);", pending_listid_query)
 
 get_current_fites = () ->
-    query_wrapper(util.format "SELECT * FROM fite WHERE fitelist = (%s);", active_listid_query)
+    query_wrapper(util.format "SELECT * FROM fite LEFT OUTER JOIN vote ON vote.fiteid = fite.fiteid WHERE fitelist = (%s);", active_listid_query)
 
 expire_list = () ->
     insert_wrapper util.format("UPDATE fitelist SET expires_on = datetime('now') WHERE listid = (%s);", active_listid_query)
@@ -167,23 +168,27 @@ vote = (userid, rank, choice) ->
   #first get fite id, then check if the vote is valid then cast it
 
     got_fite = (row) ->
-        fite_id = row[0].fiteid
+        if row.length < 1
+            "Invalid fite id"
+        else
+            fite_id = row[0].fiteid
 
-        valid_vote = (data) ->
-            if data[0] && data[0].vote_count
-                "You can only vote once!"
-            else
-                cast_vote userid, fite_id, choice
+            valid_vote = (data) ->
+                console.log data
+                if data[0] && data[0].vote_count
+                    "You can only vote once per fite! And no changes!"
+                else
+                    cast_vote userid, fite_id, choice
 
-        invalid_vote = (err) ->
-            err
+            invalid_vote = (err) ->
+                console.log 'errored'
+                err
 
-        query_s = util.format "SELECT COUNT(*) AS vote_count FROM vote WHERE user = '%s' AND fiteid = %s;", userid, fite_id
-        query_wrapper(query_s)
-            .then valid_vote, invalid_vote
+            query_s = util.format "SELECT COUNT(*) AS vote_count FROM vote WHERE user = '%s' AND fiteid = %s;", userid, fite_id
+            query_wrapper(query_s)
+                .then valid_vote, invalid_vote
 
     fite_failed = (err) ->
-        console.log 'err'
         err
 
     get_fite_id(rank).then got_fite, fite_failed

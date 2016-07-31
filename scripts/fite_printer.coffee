@@ -9,7 +9,7 @@ print_fites = (fites) ->
     table = new Table(config)
 
     fites.forEach (fite) ->
-        table.push([fite.rank, fite.left_fiter, 'VS', fite.right_fiter])
+        table.push([fite.rank, fmt_fiter(fite.left_fiter), 'VS', fmt_fiter(fite.right_fiter)])
 
     table.toString()
 
@@ -27,6 +27,8 @@ print_pending_fites = (fites) ->
 
     table.toString()
 
+fmt_fiter = (fite) ->
+    util.format "%s ("
 
 module.exports = {
     print_pending_fites: print_pending_fites

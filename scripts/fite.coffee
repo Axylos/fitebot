@@ -15,7 +15,7 @@ module.exports = (robot) ->
   robot.hear /current list/i, (res)->
       resp = queries.get_latest().then (data) ->
           if data.length == 0
-            res.reply "There are no current fites.  Here are past fites"
+            res.reply "There are no current fites.  Here are past and pending fites"
             (queries.get_all()).then (data) ->
                       response_str = ''
                       data.forEach (row) ->
@@ -29,6 +29,7 @@ module.exports = (robot) ->
             resp = util.format 'This is the "%s" Fite!  It expires on %s!', data.description, data.expires_on
 
             fulfilled = (fites) ->
+                console.log fites
                 fite_table = printer.print_fites(fites)
                 resp_string = resp + '\n' + fite_table
 
@@ -170,7 +171,7 @@ module.exports = (robot) ->
           res.reply data
 
       rejected = (err) ->
-          res.reply err + "You can only vote once!"
+          res.reply err
       queries.get_user(res.match[1]).then fulfilled, rejected
 
   robot.hear /vote\s+(\d)\s+(left|right)/i, (res) ->
