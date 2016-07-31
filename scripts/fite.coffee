@@ -11,7 +11,7 @@ module.exports = (robot) ->
   robot.hear /badger/i, (res) ->
     res.send "what i nthe fuck"
 
-  robot.hear /list/i, (res)->
+  robot.hear /current list/i, (res)->
       resp = queries.get_latest().then (data) ->
           data = data[0]
           resp = util.format 'This is the "%s" Fite!  It expires on %s!', data.description, data.expires_on
@@ -39,3 +39,7 @@ module.exports = (robot) ->
               response_str = response_str.concat(util.format '\n %s   %s', row.listid, row.description)
 
           res.reply response_str
+
+  robot.hear /delete list (\d)/i, (res) ->
+      (queries.delete_list(res.match[1])).then (data) ->
+         res.reply data

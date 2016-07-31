@@ -53,6 +53,8 @@ new_list = (description) ->
 get_all = ->
     query_wrapper get_all_query
 
+delete_list = (listid) ->
+    query_wrapper util.format "DELETE FROM fitelist WHERE listid = %d", listid
 
 module.exports = {
     get_list: get_list,
@@ -60,5 +62,6 @@ module.exports = {
     activate_list: activate_list_fn,
     new_list: new_list,
     get_all: get_all,
+    delete_list: delete_list,
     init: init
 }
