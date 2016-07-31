@@ -43,3 +43,15 @@ module.exports = (robot) ->
   robot.hear /delete list (\d)/i, (res) ->
       (queries.delete_list(res.match[1])).then (data) ->
          res.reply data
+
+  robot.hear /add fite "(.*)" "(.*)"/i, (res) ->
+      left = res.match[1]
+      right = res.match[2]
+
+      (queries.add_fite left, right).then (data) ->
+          console.log JSON.stringify data
+          res.reply(data)
+
+  robot.hear /vacuum fites/i, (res) ->
+      queries.vacuum_fites().then (data) ->
+          res.reply data

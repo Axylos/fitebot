@@ -5,6 +5,7 @@ db = null
 
 init = (new_db) ->
   db = new_db
+  db.run "PRAGMA foreign_keys = ON;"
 
 
 query_wrapper = (query) ->
@@ -27,6 +28,8 @@ time_query = "(select strftime('%Y-%m-%d %H:%M', (select date('now', '+3 days'))
 
 get_all_query = "SELECT listid, description FROM fitelist;"
 
+add_fite_query = "INSERT INTO fite (left_fiter, right_fiter, description, fitelist) VALUES ('%s', '%s', '%s', '%s')" 
+
 new_list_query = (description) ->
   db.run("INSERT INTO fitelist (description, expires_on) VALUES ($description,"+time_query+");",
     {$description: description})
@@ -40,6 +43,9 @@ activate_list_query = (listid) ->
 
 activate_list_fn = (id) ->
     insert_wrapper (activate_list_query id)
+
+get_last_inactive = ->
+    query_wrapper "SELECT listid FROM fitelist WHERE is_active = 0 ORDER BY listid DESC LIMIT 1;"
 
 get_latest = () ->
   query_wrapper(get_latest_query)
@@ -56,6 +62,15 @@ get_all = ->
 delete_list = (listid) ->
     query_wrapper util.format "DELETE FROM fitelist WHERE listid = %d", listid
 
+add_fite = (left, right) ->
+    last_id = get_last_inactive().then (list) ->
+      query_s = util.format add_fite_query, left, right, "the two hole", list[0].listid
+      console.log(query_s)
+      insert_wrapper query_s
+
+vacuum_fites = ->
+    insert_wrapper "DELETE FROM fite WHERE fitelist IN (SELECT listid FROM fitelist WHERE is_active = 0);"
+
 module.exports = {
     get_list: get_list,
     get_latest: get_latest,
@@ -63,5 +78,7 @@ module.exports = {
     new_list: new_list,
     get_all: get_all,
     delete_list: delete_list,
+    add_fite: add_fite,
+    vacuum_fites: vacuum_fites
     init: init
 }
