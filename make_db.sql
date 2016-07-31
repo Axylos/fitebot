@@ -14,3 +14,9 @@ CREATE TABLE fite(
     fitelist INTEGER NOT NULL,
     FOREIGN KEY(fitelist) REFERENCES fitelist(listid)
 );
+
+CREATE TABLE user(
+    userid VARCHAR(255) PRIMARY KEY NOT NULL,
+    is_admin BOOLEAN DEFAULT 0 NOT NULL,
+    name VARCHAR(255) NOT NULL
+);

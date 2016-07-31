@@ -1,0 +1,4 @@
+#!/bin/sh
+
+rm fite.db
+sqlite3 fite.db < make_db.sql
