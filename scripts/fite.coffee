@@ -1,23 +1,41 @@
-{spawn, exec} = require 'child_process'
-sqlite = require 'sqlite'
-db = sqlite.openDatabasesync "fite.db"
+sqlite = require 'sqlite3'
+db = new sqlite.Database "fite.db"
+util = require 'util'
+queries = require './sql_queries.coffee'
 
+Deferred = require('promise.coffee').Deferred
 
+queries.init(db)
 
 module.exports = (robot) ->
   robot.hear /badger/i, (res) ->
     res.send "what i nthe fuck"
 
-  robot.respond /open the pod bay doors/i, (res) ->
-      res.reply "fuck off"
+  robot.hear /list/i, (res)->
+      resp = queries.get_latest().then (data) ->
+          data = data[0]
+          resp = util.format 'This is the "%s" Fite!  It expires on %s!', data.description, data.expires_on
+          res.reply resp
 
-  robot.respond /get list/i, (res) ->
-      res.reply 'hey there'
+  robot.hear /insert it/i, (res) ->
+      ins_query()
+      res.reply 'done'
 
-  robot.hear /foobar/i, (res) ->
-    response = exec "pwd"
+  robot.hear /activate list (\d)/i, (res) ->
+      promise = queries.activate_list res.match[1]
+      promise.then (data) ->
+          res.reply data
 
-    response.stdout.on 'data', (data) ->
-        res.reply data.toString()
+  robot.hear /make list "(.*)"/i, (res) ->
+      promise = queries.new_list res.match[1]
+      promise.then (data) ->
+          res.reply data
 
 
+  robot.hear /get all/i, (res) ->
+      (queries.get_all()).then (data) ->
+          response_str = ''
+          data.forEach (row) ->
+              response_str = response_str.concat(util.format '\n %s   %s', row.listid, row.description)
+
+          res.reply response_str
