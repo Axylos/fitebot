@@ -14,30 +14,37 @@ module.exports = (robot) ->
 
   robot.hear /current list/i, (res)->
       resp = queries.get_latest().then (data) ->
-          data = data[0]
-          resp = util.format 'This is the "%s" Fite!  It expires on %s!', data.description, data.expires_on
+          if data.length == 0
+            res.reply "There are no current fites.  Here are past fites"
+            (queries.get_all()).then (data) ->
+                      response_str = ''
+                      data.forEach (row) ->
+                          response_str = response_str.concat(util.format '\n %s   %s', row.listid, row.description)
 
-          fulfilled = (fites) ->
-              fite_table = printer.print_fites(fites)
-              resp_string = resp + '\n' + fite_table
+                      res.reply response_str
 
-              res.reply resp_string
+          else 
 
-          rejected = (err) ->
-              res.reply err
+            data = data[0]
+            resp = util.format 'This is the "%s" Fite!  It expires on %s!', data.description, data.expires_on
 
-          queries.get_current_fites().then fulfilled, rejected
+            fulfilled = (fites) ->
+                fite_table = printer.print_fites(fites)
+                resp_string = resp + '\n' + fite_table
 
+                res.reply resp_string
 
-  robot.hear /insert it/i, (res) ->
-      ins_query()
-      res.reply 'done'
+            rejected = (err) ->
+                res.reply err
+
+            queries.get_current_fites().then fulfilled, rejected
+
 
   robot.hear /get pending list/i, (res) ->
       fulfilled = (data) ->
           res.reply JSON.stringify data
           queries.get_pending_fites().then (fites) ->
-              res.reply printer.print_fites(fites)
+              res.reply printer.print_pending_fites(fites)
       rejected = (err) ->
           res.reply err
 
@@ -45,7 +52,7 @@ module.exports = (robot) ->
 
   robot.hear /get pending fites/i, (res) ->
       fulfilled = (data) ->
-          res.reply printer.print_fites(data)
+          res.reply printer.print_pending_fites(data)
       rejected = (err) ->
           res.reply err
 
@@ -54,11 +61,27 @@ module.exports = (robot) ->
 
   robot.hear /activate list/i, (res) ->
       fulfilled = (data) ->
+          res.reply JSON.stringify(data)
+      rejected = (err) ->
+          res.reply err
+
+      expire_fulfilled = (accepted) ->
+          res.reply JSON.stringify(accepted)
+          queries.activate_list().then fulfilled, rejected
+      expire_rejected = (err) ->
+          res.reply err
+
+      queries.expire_list().then expire_fulfilled, expire_rejected
+
+      queries.expire_list().then ->
+
+  robot.hear /expire list/i, (res) ->
+      fulfilled = (data) ->
           res.reply data
       rejected = (err) ->
           res.reply err
 
-      queries.activate_list().then fulfilled, rejected
+      queries.expire_list().then fulfilled, rejected
 
   robot.hear /make list "(.*)"/i, (res) ->
       fulfilled = (data) ->
@@ -147,5 +170,23 @@ module.exports = (robot) ->
           res.reply data
 
       rejected = (err) ->
-          res.reply err
+          res.reply err + "You can only vote once!"
       queries.get_user(res.match[1]).then fulfilled, rejected
+
+  robot.hear /vote\s+(\d)\s+(left|right)/i, (res) ->
+      user = res.message.user
+      fulfilled = (data) ->
+          vote_good = (vote) ->
+              res.reply JSON.stringify(vote)
+
+          vote_bad = (err) ->
+              eonsole.log 'failed'
+              res.reply JSON.stringify err
+
+          queries.vote(user.id, res.match[1], res.match[2]).then vote_good, vote_bad
+
+      rejected = (err) ->
+          res.reply err
+
+      queries.maybeMakeUser(user).then fulfilled, rejected
+      res.reply res.match[2]
