@@ -36,6 +36,7 @@ module.exports = (robot) ->
                 res.reply resp_string
 
             rejected = (err) ->
+                console.log 'error'
                 res.reply err
 
             queries.get_current_fites().then fulfilled, rejected
@@ -176,6 +177,7 @@ module.exports = (robot) ->
 
   robot.hear /vote\s+(\d)\s+(left|right)/i, (res) ->
       user = res.message.user
+      user.id = user.id + 4
       fulfilled = (data) ->
           vote_good = (vote) ->
               res.reply JSON.stringify(vote)
@@ -191,3 +193,18 @@ module.exports = (robot) ->
 
       queries.maybeMakeUser(user).then fulfilled, rejected
       res.reply res.match[2]
+
+  robot.hear /get fite votes (\d) /i, (res) ->
+      fulfilled (data) ->
+          res.reply(printer.print_fite_votes(data))
+
+      rejected (err) ->
+          res.resply err
+
+      queries.get_fite_votes(res.match[1]).then fulfilled, rejected
+
+
+  robot.hear /show list (\d)/i, (res) ->
+      queries.get_list(res.match[1]).then (fites) ->
+          resp = "Here are the results for Fite " + res.match[1]
+          res.reply resp + printer.print_fites(fites)

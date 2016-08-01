@@ -7,7 +7,6 @@ init = (new_db) ->
   db = new_db
   db.run "PRAGMA foreign_keys = ON;"
 
-
 query_wrapper = (query) ->
     console.log query
     deferred = new Deferred()
@@ -51,7 +50,6 @@ activate_list_bit = () ->
         insert_wrapper util.format("UPDATE fitelist SET is_active = 1, expires_on = (%s) WHERE listid = (%s)", time_query, pending_listid_query)
 
 activate_list_fn = () ->
-    console.log 'activa lister'
     fulfilled = (data) ->
         get_current_fites().then (fites) ->
            i = 0
@@ -60,13 +58,10 @@ activate_list_fn = () ->
                count = ++i
                insert_wrapper util.format("UPDATE fite SET rank = %d WHERE fiteid = '%s';", count, fite.fiteid)
 
-
     rejected = (err) ->
         console.log err
         err
 
-
-    console.log 'making call'
     activate_list_bit().then fulfilled, rejected
        
 get_last_inactive = ->
@@ -89,7 +84,6 @@ delete_list = (listid) ->
 
 add_fite = (left, right) ->
     last_id = get_last_inactive().then (list) ->
-        console.log list
         query_s = util.format add_fite_query, left, right, "the two hole", list[0].listid
         insert_wrapper query_s
 
@@ -144,14 +138,20 @@ get_pending_fites = () ->
   query_wrapper(util.format "SELECT * FROM fite WHERE fitelist = (%s);", pending_listid_query)
 
 get_current_fites = () ->
-    query_wrapper(util.format "SELECT * FROM fite LEFT OUTER JOIN vote ON vote.fiteid = fite.fiteid WHERE fitelist = (%s);", active_listid_query)
+    cols = "fite.fiteid, fite.left_fiter, fite.rank, fite.right_fiter, COUNT(vote.choice) AS vote_count"
+    query_s = util.format "select %s from vote JOIN fite ON vote.fiteid = fite.fiteid WHERE fite.fitelist = (%s) GROUP BY vote.choice;", cols
+    query_wrapper(util.format query_s, active_listid_query)
+
+get_fite_by_list = (listid) ->
+    cols = "fite.fiteid, fite.left_fiter, fite.rank, fite.right_fiter, COUNT(vote.choice) AS vote_count"
+    query_s = util.format "select %s from vote JOIN fite ON vote.fiteid = fite.fiteid WHERE fite.fitelist = %d GROUP BY vote.choice;", cols
+    query_wrapper(util.format query_s, listid)
 
 expire_list = () ->
     insert_wrapper util.format("UPDATE fitelist SET expires_on = datetime('now') WHERE listid = (%s);", active_listid_query)
 
 maybeMakeUser = (user) ->
     user_exists(user.id).then (it_exists) ->
-        console.log it_exists
         if it_exists == false
             query_s = "INSERT INTO user (userid, name) VALUES ('%s', '%s')"
             insert_wrapper util.format(query_s, user.id, user.name)
@@ -174,14 +174,12 @@ vote = (userid, rank, choice) ->
             fite_id = row[0].fiteid
 
             valid_vote = (data) ->
-                console.log data
                 if data[0] && data[0].vote_count
                     "You can only vote once per fite! And no changes!"
                 else
                     cast_vote userid, fite_id, choice
 
             invalid_vote = (err) ->
-                console.log 'errored'
                 err
 
             query_s = util.format "SELECT COUNT(*) AS vote_count FROM vote WHERE user = '%s' AND fiteid = %s;", userid, fite_id
@@ -221,5 +219,6 @@ module.exports = {
     expire_list: expire_list,
     maybeMakeUser: maybeMakeUser,
     vote: vote,
+    get_list: get_fite_by_list,
     init: init
 }

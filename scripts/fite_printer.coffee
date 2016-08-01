@@ -1,4 +1,5 @@
 Table = require 'cli-table2'
+util = require 'util'
 
 print_fites = (fites) ->
     config = {
@@ -9,7 +10,7 @@ print_fites = (fites) ->
     table = new Table(config)
 
     fites.forEach (fite) ->
-        table.push([fite.rank, fmt_fiter(fite.left_fiter), 'VS', fmt_fiter(fite.right_fiter)])
+        table.push([fite.rank, fmt_fiter(fite, 'left'), 'VS', fmt_fiter(fite, 'right')])
 
     table.toString()
 
@@ -27,8 +28,13 @@ print_pending_fites = (fites) ->
 
     table.toString()
 
-fmt_fiter = (fite) ->
-    util.format "%s ("
+fmt_fiter = (fite, pos) ->
+    if pos == 'left'
+        choice = 'left_fiter'
+    else
+        choice = 'right_fiter'
+    resp = util.format("%s (%d)", fite[choice], fite.vote_count)
+    resp
 
 module.exports = {
     print_pending_fites: print_pending_fites
