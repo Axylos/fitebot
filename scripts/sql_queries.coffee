@@ -46,8 +46,16 @@ list_query = "SELECT * FROM fitelist;"
 get_latest_query = "SELECT * FROM fitelist where is_active = 1 AND expires_on > datetime('now') ORDER BY listid DESC LIMIT 1;"
 
 activate_list_bit = () ->
-    insert_wrapper("UPDATE fitelist SET is_active = 0;").then (data) ->
+    fulfilled = (data) ->
+        console.log "lists deactivated"
+        console.log data
         insert_wrapper util.format("UPDATE fitelist SET is_active = 1, expires_on = (%s) WHERE listid = (%s)", time_query, pending_listid_query)
+
+    rejected = (err) ->
+        console.log(err)
+        err
+
+    insert_wrapper("UPDATE fitelist SET is_active = 0;").then fulfilled, rejected
 
 activate_list_fn = () ->
     fulfilled = (data) ->
@@ -148,7 +156,7 @@ get_fite_by_list = (listid) ->
     query_wrapper(util.format query_s, listid)
 
 expire_list = () ->
-    insert_wrapper util.format("UPDATE fitelist SET expires_on = datetime('now') WHERE listid = (%s);", active_listid_query)
+    insert_wrapper util.format("UPDATE fitelist SET expires_on = datetime('now'), is_active = 0 WHERE listid = (%s);", active_listid_query)
 
 maybeMakeUser = (user) ->
     user_exists(user.id).then (it_exists) ->

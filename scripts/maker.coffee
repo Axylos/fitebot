@@ -5,7 +5,7 @@ sql_stmts = [
         created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
         description   VARCHAR(255),
         expires_on  DATETIME NOT NULL,
-        is_active BOOLEAN DEFAULT 0 NOT NULL UNIQUE
+        is_active BOOLEAN DEFAULT 0 NOT NULL
     );",
 
     "CREATE TABLE fite(
