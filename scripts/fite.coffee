@@ -216,4 +216,4 @@ module.exports = (robot) ->
   robot.hear /show list (\d)/i, (res) ->
       queries.get_list(res.match[1]).then (fites) ->
           resp = "Here are the results for Fite " + res.match[1]
-          res.reply resp + printer.print_fites(fites)
+          res.reply resp + printer.print_pending_fites(fites)

@@ -61,6 +61,7 @@ activate_list_fn = () ->
     fulfilled = (data) ->
         get_current_fites().then (fites) ->
            i = 0
+           console.log fites
            while i < fites.length
                fite = fites[i]
                count = ++i
@@ -152,8 +153,9 @@ get_current_fites = () ->
 
 get_fite_by_list = (listid) ->
     cols = "fite.fiteid, fite.left_fiter, fite.rank, fite.right_fiter, COUNT(vote.choice) AS vote_count"
-    query_s = util.format "select %s from vote JOIN fite ON vote.fiteid = fite.fiteid WHERE fite.fitelist = %d GROUP BY vote.choice;", cols
-    query_wrapper(util.format query_s, listid)
+    query_s = util.format "select %s from fite LEFT OUTER JOIN vote ON vote.fiteid = fite.fiteid WHERE fite.fitelist = %d GROUP BY vote.choice;", cols, listid
+    console.log query_s
+    query_wrapper query_s
 
 expire_list = () ->
     insert_wrapper util.format("UPDATE fitelist SET expires_on = datetime('now'), is_active = 0 WHERE listid = (%s);", active_listid_query)

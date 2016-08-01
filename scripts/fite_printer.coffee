@@ -4,7 +4,7 @@ util = require 'util'
 print_fites = (fites) ->
     config = {
         head: ['ID', 'Left', '', 'Right'],
-        colWidths: [5, 60, 5, 60]
+        colWidths: [5, 40, 5, 40]
 
     }
     table = new Table(config)
@@ -18,7 +18,7 @@ print_fites = (fites) ->
 print_pending_fites = (fites) ->
     config = {
         head: ['Left', 'Right'],
-        colWidths: [60, 60]
+        colWidths: [40, 40]
 
     }
     table = new Table(config)
