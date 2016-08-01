@@ -1,8 +1,18 @@
-sqlite = require 'sqlite3'
-db = new sqlite.Database "fite.db"
+sqlite = require('sqlite3')
+fs = require 'fs'
 util = require "util"
 queries = require './sql_queries.coffee'
 printer = require './fite_printer.coffee'
+maker = require './maker.coffee'
+
+file = 'fite.db'
+exists = fs.existsSync(file)
+db = new sqlite.Database file
+
+if !exists
+  maker.setup_db(db)
+
+
 
 Deferred = require('promise.coffee').Deferred
 
