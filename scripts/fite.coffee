@@ -39,7 +39,6 @@ module.exports = (robot) ->
             resp = util.format 'This is the "%s" Fite!  It expires on %s!', data.description, data.expires_on
 
             fulfilled = (fites) ->
-                console.log fites
                 fite_table = printer.print_fites(fites)
                 resp_string = resp + '\n' + fite_table
 

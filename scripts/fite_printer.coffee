@@ -12,7 +12,7 @@ print_fites = (fites) ->
     fites.forEach (fite) ->
         table.push([fite.rank, fmt_fiter(fite, 'left'), 'VS', fmt_fiter(fite, 'right')])
 
-    table.toString()
+    "```" + table.toString() + "```"
 
 
 print_pending_fites = (fites) ->
@@ -26,7 +26,7 @@ print_pending_fites = (fites) ->
     fites.forEach (fite) ->
         table.push([fite.left_fiter, fite.right_fiter])
 
-    table.toString()
+    "```" + table.toString() + "```"
 
 fmt_fiter = (fite, pos) ->
     if pos == 'left'

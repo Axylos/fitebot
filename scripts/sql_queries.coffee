@@ -139,7 +139,7 @@ get_pending_fites = () ->
 
 get_current_fites = () ->
     cols = "fite.fiteid, fite.left_fiter, fite.rank, fite.right_fiter, COUNT(vote.choice) AS vote_count"
-    query_s = util.format "select %s from vote JOIN fite ON vote.fiteid = fite.fiteid WHERE fite.fitelist = (%s) GROUP BY vote.choice;", cols
+    query_s = util.format "select %s from fite LEFT OUTER JOIN vote ON vote.fiteid = fite.fiteid WHERE fite.fitelist = (%s) GROUP BY vote.choice;", cols
     query_wrapper(util.format query_s, active_listid_query)
 
 get_fite_by_list = (listid) ->
