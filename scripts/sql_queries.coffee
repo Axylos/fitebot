@@ -55,7 +55,7 @@ activate_list_bit = () ->
         console.log(err)
         err
 
-    insert_wrapper("UPDATE fitelist SET is_active = 0;").then fulfilled, rejected
+    insert_wrapper("UPDATE fitelist SET is_active = 0, expires_on = datetime('now') WHERE is_active = 1;").then fulfilled, rejected
 
 activate_list_fn = () ->
     fulfilled = (data) ->
@@ -148,8 +148,9 @@ get_pending_fites = () ->
 
 get_current_fites = () ->
     cols = "fite.fiteid, fite.left_fiter, fite.rank, fite.right_fiter, COUNT(vote.choice) AS vote_count"
-    query_s = util.format "select %s from fite LEFT OUTER JOIN vote ON vote.fiteid = fite.fiteid WHERE fite.fitelist = (%s) GROUP BY vote.choice;", cols
-    query_wrapper(util.format query_s, active_listid_query)
+    query_s = util.format "select %s from fite LEFT OUTER JOIN vote ON vote.fiteid = fite.fiteid WHERE fite.fitelist = (%s) GROUP BY vote.choice;", cols, active_listid_query
+    console.log query_s
+    query_wrapper(query_s)
 
 get_fite_by_list = (listid) ->
     cols = "fite.fiteid, fite.left_fiter, fite.rank, fite.right_fiter, COUNT(vote.choice) AS vote_count"

@@ -39,6 +39,7 @@ module.exports = (robot) ->
             resp = util.format 'This is the "%s" Fite!  It expires on %s!', data.description, data.expires_on
 
             fulfilled = (fites) ->
+                console.log fites
                 fite_table = printer.print_fites(fites)
                 resp_string = resp + '\n' + fite_table
 
@@ -215,5 +216,6 @@ module.exports = (robot) ->
 
   robot.hear /show list (\d)/i, (res) ->
       queries.get_list(res.match[1]).then (fites) ->
+          console.log fites
           resp = "Here are the results for Fite " + res.match[1]
-          res.reply resp + printer.print_pending_fites(fites)
+          res.reply resp + "\n" + printer.print_pending_fites(fites)
