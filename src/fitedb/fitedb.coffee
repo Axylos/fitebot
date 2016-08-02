@@ -1,16 +1,14 @@
 module.exports = (db) ->
   util = require 'util'
 
-  TIME_QUERY = "SELECT strftime('%Y-%m-%d %H:%M', (SELECT date('now', '+3 days')), '12:00')"
+  TIME_QUERY = "SELECT strftime('%Y-%m-%d %H:%M',
+                                (SELECT date('now', '+3 days')),
+                                 '12:00')"
 
   get_wrapper = (query_s) ->
     db.get(query_s)
-      .then (data) -> 
+      .then (data) ->
         data
-
-      .catch (err) ->
-        err
-
 
   get_current_list = () ->
     query_s = "SELECT *
@@ -38,7 +36,7 @@ module.exports = (db) ->
 
   add_fite_to_list = (left, right) ->
     query_s = "INSERT INTO fite
-               (left, right, fitelist)
+               (left_fiter, right_fiter, fitelist)
                VALUES ('%s', '%s', %d);"
 
     list = get_last_pending_list()
@@ -46,9 +44,19 @@ module.exports = (db) ->
         query = util.format(query_s, left, right, list.listid)
         db.run query
 
+  get_row_count = (table) ->
+    query_s = "SELECT COUNT(*) AS count FROM
+               %s;"
+
+
+    get_wrapper util.format(query_s, table)
+    .then (row) ->
+      row.count
+
   {
     get_current_list: get_current_list
     create_list: create_list
     add_fite_to_list: add_fite_to_list
     get_pending_list: get_last_pending_list
+    get_row_count: get_row_count
   }

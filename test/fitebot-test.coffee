@@ -45,7 +45,6 @@ describe 'db api', ->
 
     it 'can make a list', ->
       @api.create_list('new_list').then (data) ->
-        console.log data
         assert.ok(data)
 
     it 'gets a pending list when there is one', ->
@@ -57,7 +56,23 @@ describe 'db api', ->
       @api.get_current_list().then (data) ->
         assert.equal(data, undefined)
 
-    it 'can add a fite with no description', ->
-      @api.add_fite('left', 'right').then (data) ->
-        assert.ok(data)
+    it 'gets last pending list', ->
+      api = @api
+      api.create_list 'foo'
+      .then () ->
+        api.create_list 'bar'
+      .then () ->
+        api.get_pending_list()
+      .then (list) ->
+        assert.equal(list.description, 'bar')
 
+
+    it 'can add a fite with no description', ->
+      api = @api
+      api.get_row_count('fite')
+        .then (first_count) ->
+          api.add_fite('left', 'right').then (data) ->
+            assert.ok(data)
+          .then () ->
+            api.get_row_count('fite').then (second_count) ->
+              assert.notEqual first_count, second_count
