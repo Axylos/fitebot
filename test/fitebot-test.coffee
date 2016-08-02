@@ -23,11 +23,6 @@ describe 'fitebot', ->
   it 'responds to badger', ->
     assert.ok(@robot.hear.calledWith(/badger/i))
 
-  it 'responds to badger with what?!', ->
-    console.log 'hey there'
-    console.log @api.badger()
-    console.log @api.shout()
-
 describe 'simple msgs', ->
     beforeEach ->
       @api = {}
@@ -38,3 +33,31 @@ describe 'simple msgs', ->
 
     it 'badgers and asks what', ->
       assert.equal(@api.badger(), 'what?!')
+
+describe 'db api', ->
+    beforeEach ->
+      @api = {}
+      require('../src/api')(@api)
+
+    it 'gets current list when empty', ->
+      @api.get_current_list().then (data) ->
+        assert.equal(data, undefined)
+
+    it 'can make a list', ->
+      @api.create_list('new_list').then (data) ->
+        console.log data
+        assert.ok(data)
+
+    it 'gets a pending list when there is one', ->
+      @api.get_pending_list().then (data) ->
+        assert.ok(data)
+        assert.ok(data.listid > 0)
+
+    it 'gets current list when there is not an active current list', ->
+      @api.get_current_list().then (data) ->
+        assert.equal(data, undefined)
+
+    it 'can add a fite with no description', ->
+      @api.add_fite('left', 'right').then (data) ->
+        assert.ok(data)
+

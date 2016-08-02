@@ -31,3 +31,6 @@ module.exports = (robot) ->
 
   robot.hear /badger/i, (res) ->
     msg.reply api.badger()
+
+  robot.respond /current list/i, (res) ->
+    res.reply api.get_current_list
