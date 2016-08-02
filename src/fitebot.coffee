@@ -17,6 +17,11 @@
 api = require './api'
 db_setup = require './fitedb/db_setup'
 
+#setup and conditionall build db
+db = {}
+db_setup(db)
+db.make #make takes an optional boolean param to force a db refresh
+
 module.exports = (robot) ->
   robot.respond /hello/, (msg) ->
     msg.reply "hello!"
