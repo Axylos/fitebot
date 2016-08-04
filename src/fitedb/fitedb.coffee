@@ -80,13 +80,21 @@ module.exports = (db) ->
     get_wrapper util.format(query_s, id)
 
 
+  begin_transaction = () ->
+    db.exec 'BEGIN'
+
+  rollback_transaction = () ->
+    db.exec 'ROLLBACK'
+
   api = {
-      get_current_list: get_current_list,
-      create_list: create_list,
-      add_fite_to_list: add_fite_to_list,
-      get_list_by_id: get_list_by_id,
-      get_pending_list: get_last_pending_list,
-      get_row_count: get_row_count,
-    }
+    get_current_list: get_current_list
+    create_list: create_list
+    add_fite_to_list: add_fite_to_list
+    get_list_by_id: get_list_by_id
+    get_pending_list: get_last_pending_list
+    get_row_count: get_row_count
+    begin_transaction: begin_transaction
+    rollback_transaction: rollback_transaction
+  }
 
   api

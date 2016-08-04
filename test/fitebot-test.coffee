@@ -35,9 +35,18 @@ describe 'simple msgs', ->
       assert.equal(@api.badger(), 'what?!')
 
 describe 'db api', ->
-    beforeEach ->
-      @api = {}
-      require('../src/api')(@api)
+    db = {}
+    before () ->
+      @api = db
+      #the manual promise thing is gross but coffeescript syntax
+      #makes it hard to hang a promise on require without gross syntax
+
+      promise = require('../src/api')(@api)
+      promise.then (db) ->
+        db.begin_transaction()
+
+      after () ->
+        db.rollback_transaction()
 
     it 'gets current list when empty', ->
       @api.get_current_list().then (data) ->

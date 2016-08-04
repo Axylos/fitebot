@@ -1,6 +1,7 @@
 module.exports = (api) ->
 
   setup_db = require './fitedb/db_setup'
+  q = require 'q'
   db = null
   fitedb = null
   #setup_db takes an optional param force to refresh the db
@@ -55,3 +56,19 @@ module.exports = (api) ->
           data
         .catch (err) ->
           err
+
+    api.begin_transaction = () ->
+      fitedb.begin_transaction()
+        .then (data) ->
+          data
+        .catch (err) ->
+          console.log err
+          err
+
+    api.rollback_transaction = () ->
+      fitedb.rollback_transaction()
+        .then (data) ->
+          data
+        .catch (err) ->
+
+    q.resolve fitedb
