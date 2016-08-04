@@ -1,7 +1,7 @@
 {
-  "name": "hubot-fitebot",
+  "name": "fitebot",
   "description": "conceptual warfare (with voting)",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "author": "Axylos <robertdraketalley@gmail.com>",
   "license": "MIT",
   "keywords": [
@@ -10,10 +10,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Axylos/hubot-fitebot.git"
+    "url": "https://github.com/Axylos/fitebot.git"
   },
   "bugs": {
-    "url": "https://github.com/Axylos/hubot-fitebot/issues"
+    "url": "https://github.com/Axylos/fitebot/issues"
   },
   "dependencies": {
     "coffee-script": "^1.9.0",
