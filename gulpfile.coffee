@@ -59,10 +59,10 @@ gulp.task 'istanbul', ['clean:coverage', 'compile'], (cb) ->
         .pipe $.if(!boolifyString(process.env.CI), $.plumber())
         .pipe $.mocha()
         #Creating the reports after tests runned
-        .pipe $.istanbul.writeReports()
-        .on 'finish', ->
-          process.chdir __dirname
-          cb()
+        #.pipe $.istanbul.writeReports()
+        #.on 'finish', ->
+        # process.chdir __dirname
+        cb()
   undefined
 
 gulp.task 'watch', ['test'], ->
