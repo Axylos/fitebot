@@ -13,7 +13,7 @@ module.exports = (force) ->
       db.run "CREATE TABLE fitelist(
               listid  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
               created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-              description   VARCHAR(255),
+              name   VARCHAR(255),
               expires_on  DATETIME NOT NULL,
               is_active BOOLEAN DEFAULT 0 NOT NULL
               );"
@@ -23,7 +23,6 @@ module.exports = (force) ->
                   created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
                   left_fiter  VARCHAR(255)  NOT NULL,
                   right_fiter  VARCHAR(255)  NOT NULL,
-                  description  VARCHAR(255),
                   fitelist INTEGER NOT NULL,
                   rank INTEGER,
                   FOREIGN KEY(fitelist) REFERENCES fitelist(listid)
@@ -48,8 +47,6 @@ module.exports = (force) ->
                   );"
         .catch (err) ->
           console.log err
-        .then (data) ->
-          console.log data
 
     db
 #

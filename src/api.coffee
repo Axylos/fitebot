@@ -48,3 +48,10 @@ module.exports = (api) ->
           data
         .catch (err) ->
           err
+
+    api.get_list_by_id = (id) ->
+      fitedb.get_list_by_id id
+        .then (data) ->
+          data
+        .catch (err) ->
+          err

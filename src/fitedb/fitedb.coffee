@@ -9,6 +9,13 @@ module.exports = (db) ->
     db.get(query_s)
       .then (data) ->
         data
+      .catch (err) ->
+
+  all_wrapper = (query_s) ->
+    db.all(query_s)
+      .then (data) ->
+        data
+
 
   get_current_list = () ->
     query_s = "SELECT *
@@ -20,12 +27,15 @@ module.exports = (db) ->
 
   create_list = (name) ->
     query_s = "INSERT INTO fitelist
-               (description, expires_on)
+               (name, expires_on)
                VALUES ('%s', (%s));"
 
     db.run util.format(query_s, name, TIME_QUERY)
 
   get_last_pending_list = () ->
+    #interesting to note that an orm will automatically nest one-to-many type
+    #relationships hierarchically but this seems very hard to do with raw
+    #queries sadly two queries are needed rather than a join
     query_s = "SELECT *
                FROM fitelist
                WHERE is_active = 0 AND expires_on > datetime('now')
@@ -33,6 +43,15 @@ module.exports = (db) ->
                LIMIT 1;"
 
     get_wrapper query_s
+      .then (list) ->
+        fites_query = "SELECT *
+                       FROM fite
+                       WHERE fitelist = '%s';"
+
+        all_wrapper(util.format(fites_query, list.listid))
+          .then (fites) ->
+            list.fites = fites
+            list
 
   add_fite_to_list = (left, right) ->
     query_s = "INSERT INTO fite
@@ -53,10 +72,21 @@ module.exports = (db) ->
     .then (row) ->
       row.count
 
-  {
-    get_current_list: get_current_list
-    create_list: create_list
-    add_fite_to_list: add_fite_to_list
-    get_pending_list: get_last_pending_list
-    get_row_count: get_row_count
-  }
+  get_list_by_id = (id) ->
+    query_s = "SELECT *
+               FROM fitelist
+               WHERE listid = '%s';"
+
+    get_wrapper util.format(query_s, id)
+
+
+  api = {
+      get_current_list: get_current_list,
+      create_list: create_list,
+      add_fite_to_list: add_fite_to_list,
+      get_list_by_id: get_list_by_id,
+      get_pending_list: get_last_pending_list,
+      get_row_count: get_row_count,
+    }
+
+  api

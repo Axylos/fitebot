@@ -64,10 +64,9 @@ describe 'db api', ->
       .then () ->
         api.get_pending_list()
       .then (list) ->
-        assert.equal(list.description, 'bar')
+        assert.equal(list.name, 'bar')
 
-
-    it 'can add a fite with no description', ->
+    it 'can add a fite with no name', ->
       api = @api
       api.get_row_count('fite')
         .then (first_count) ->
@@ -76,3 +75,32 @@ describe 'db api', ->
           .then () ->
             api.get_row_count('fite').then (second_count) ->
               assert.notEqual first_count, second_count
+
+    it 'fetches all of the fites in a pending list', ->
+      api = @api
+      api.create_list 'baz'
+        .then () ->
+          api.add_fite 'coin', 'taxes'
+        .then () ->
+          api.add_fite 'magnets', 'death'
+        .then () ->
+          api.add_fite 'desk', 'chair'
+        .then () ->
+          api.add_fite 'can', 'bottle'
+        .then () ->
+          api.get_pending_list()
+            .then (list) ->
+              list
+        .then (list) ->
+          assert.equal(list.fites.length, 4)
+          assert.equal(list.fites[3].left_fiter, 'can')
+
+    it 'can fetch a list by id', ->
+      api = @api
+      api.create_list 'biz'
+        .then () ->
+          api.get_pending_list()
+        .then (list) ->
+          api.get_list_by_id(list.listid)
+        .then (new_list) ->
+          assert.equal(new_list.name, 'biz')
