@@ -71,4 +71,12 @@ module.exports = (api) ->
           data
         .catch (err) ->
 
+    api.fetch_all_lists = () ->
+      fitedb.fetch_all_lists()
+        .then (data) ->
+          data
+        .catch (err) ->
+          err
+
     q.resolve fitedb
+

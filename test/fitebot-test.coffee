@@ -113,3 +113,11 @@ describe 'db api', ->
           api.get_list_by_id(list.listid)
         .then (new_list) ->
           assert.equal(new_list.name, 'biz')
+
+
+    it 'can fetch all lists', ->
+      api = @api
+      api.fetch_all_lists()
+        .then (lists) ->
+          assert.ok(lists.length > 0)
+

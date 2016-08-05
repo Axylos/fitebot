@@ -10,11 +10,16 @@ module.exports = (db) ->
       .then (data) ->
         data
       .catch (err) ->
+        console.log err
+        err
 
   all_wrapper = (query_s) ->
     db.all(query_s)
       .then (data) ->
         data
+      .catch (err) ->
+        console.log err
+        err
 
 
   get_current_list = () ->
@@ -79,6 +84,13 @@ module.exports = (db) ->
 
     get_wrapper util.format(query_s, id)
 
+  fetch_all_lists = () ->
+    query_s = "SELECT name, listid
+               FROM fitelist
+               WHERE is_active = 0
+                     AND expires_on > date('now');"
+
+    all_wrapper query_s
 
   begin_transaction = () ->
     db.exec 'BEGIN'
@@ -95,6 +107,7 @@ module.exports = (db) ->
     get_row_count: get_row_count
     begin_transaction: begin_transaction
     rollback_transaction: rollback_transaction
+    fetch_all_lists: fetch_all_lists
   }
 
   api
