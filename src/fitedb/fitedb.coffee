@@ -1,5 +1,6 @@
 module.exports = (db) ->
   util = require 'util'
+  q = require 'q'
 
   TIME_QUERY = "SELECT strftime('%Y-%m-%d %H:%M',
                                 (SELECT date('now', '+3 days')),
@@ -10,8 +11,7 @@ module.exports = (db) ->
       .then (data) ->
         data
       .catch (err) ->
-        console.log err
-        err
+        throw err
 
   all_wrapper = (query_s) ->
     db.all(query_s)
@@ -19,8 +19,14 @@ module.exports = (db) ->
         data
       .catch (err) ->
         console.log err
-        err
+        throw err
 
+  run_wrapper = (query_s) ->
+    db.run(query_s)
+      .then (data) ->
+        if !data.lastID
+          throw 'NoUpdateOrInsert'
+        data
 
   get_current_list = () ->
     query_s = "SELECT *
@@ -35,7 +41,7 @@ module.exports = (db) ->
                (name, expires_on)
                VALUES ('%s', (%s));"
 
-    db.run util.format(query_s, name, TIME_QUERY)
+    run_wrapper util.format(query_s, name, TIME_QUERY)
 
   get_last_pending_list = () ->
     #interesting to note that an orm will automatically nest one-to-many type
@@ -49,6 +55,9 @@ module.exports = (db) ->
 
     get_wrapper query_s
       .then (list) ->
+        if !list
+          throw new Error 'no list'
+
         fites_query = "SELECT *
                        FROM fite
                        WHERE fitelist = '%s';"
@@ -98,6 +107,12 @@ module.exports = (db) ->
   rollback_transaction = () ->
     db.exec 'ROLLBACK'
 
+  activate_pending = () ->
+    get_last_pending_list()
+      .then (list) ->
+        query_s = 'UPDATE fitelist SET is_active = 1 WHERE listid = %d'
+        all_wrapper util.format(query_s, list.listid)
+
   api = {
     get_current_list: get_current_list
     create_list: create_list
@@ -108,6 +123,7 @@ module.exports = (db) ->
     begin_transaction: begin_transaction
     rollback_transaction: rollback_transaction
     fetch_all_lists: fetch_all_lists
+    activate_pending: activate_pending
   }
 
   api

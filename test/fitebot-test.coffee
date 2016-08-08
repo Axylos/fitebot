@@ -1,5 +1,6 @@
 assert = require 'power-assert'
 sinon = require 'sinon'
+_ = require 'underscore'
 
 describe 'fitebot', ->
   beforeEach ->
@@ -53,24 +54,61 @@ describe 'db api', ->
       @api.rollback_transaction()
       this.timeout 30000
 
-    it 'gets current list when empty', ->
-      @api.get_current_list().then (data) ->
-        assert.equal(data, undefined)
-
     it 'can make a list', ->
-      @api.create_list('new_list').then (data) ->
-        assert.ok(data)
+      api = @api
+      @api.create_list('new_list')
+        .then (data) ->
+          assert.ok(data.changes > 0)
+          api.get_pending_list()
+        .then (data) ->
+          assert.ok(data.listid)
+
 
     it 'gets a pending list when there is one', ->
 
-      @api.get_pending_list()
-        .then (data) ->
-          assert.ok(data)
-          #assert.ok(data.listid > 0)
-        .catch (err) ->
-          console.log err
+      api = @api
+      api.create_list('foo')
+        .then () ->
+          api.get_pending_list()
+            .then (data) ->
+              assert.ok(data.listid > 0)
+            .catch (nolist) ->
+              throw nolist
 
     it 'gets current list when there is not an active current list', ->
+      @api.get_current_list().then (data) ->
+        assert.equal(data, undefined)
+
+    it 'can activate a list', ->
+      api = @api
+      @api.create_list('inactive list')
+        .then () ->
+          api.activate_pending_list()
+        .then (list) ->
+          list
+
+    it 'only leaves one active list at a time', ->
+      api = @api
+      api.create_list('foo')
+        .then () ->
+          api.create_list('bar')
+        .then (data) ->
+          api.get_pending_list()
+        .then (data) ->
+          api.activate_pending_list()
+        .then () ->
+          api.activate_pending_list()
+        .then () ->
+          api.fetch_all_lists()
+        .then (data) ->
+          console.log 'called'
+          console.log data
+          api.get_pending_list()
+        .then (list) ->
+          console.log 'here'
+          console.log list
+
+    it 'gets current list when there is one', ->
       @api.get_current_list().then (data) ->
         assert.equal(data, undefined)
 
@@ -137,22 +175,25 @@ describe 'db api2', ->
           assert.equal(list.fites.length, 4)
           assert.equal(list.fites[3].left_fiter, 'can')
 
-    describe 'fetching', ->
-      it 'can fetch a list by id', ->
-        api = @api
-        api.create_list 'biz'
-          .then () ->
-            api.get_pending_list()
-          .then (list) ->
-            api.get_list_by_id(list.listid)
-          .then (new_list) ->
-            assert.equal(new_list.name, 'biz')
+    it 'can fetch a list by id', ->
+      api = @api
+      api.create_list 'biz'
+        .then () ->
+          api.get_pending_list()
+        .then (list) ->
+          api.get_list_by_id(list.listid)
+        .then (new_list) ->
+          assert.equal(new_list.name, 'biz')
 
 
-      it 'can fetch all lists', ->
-        api = @api
-        api.fetch_all_lists()
-          .then (lists) ->
-            assert.ok(lists.length > 0)
-            assert.ok()
+    it.only 'can fetch all lists', ->
+      api = @api
+      api.create_list('another')
+        .then () ->
+          api.fetch_all_lists()
+        .then (lists) ->
+          assert.ok(lists.length > 0)
 
+
+    it 'can activate a pending list', ->
+      assert.ok(1)

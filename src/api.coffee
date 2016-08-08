@@ -20,21 +20,19 @@ module.exports = (api) ->
         .then (data) ->
           data
         .catch (err) ->
-          err
+          throw err
 
     api.get_pending_list = () ->
       fitedb.get_pending_list()
       .then (data) ->
         data
       .catch (err) ->
-        err
+        throw err
 
     api.create_list = (name) ->
       fitedb.create_list(name)
         .then (data) ->
           data
-        .catch (err) ->
-          err
 
     api.add_fite = (left, right) ->
       fitedb.add_fite_to_list(left, right)
@@ -47,36 +45,36 @@ module.exports = (api) ->
       fitedb.get_row_count table
         .then (data) ->
           data
-        .catch (err) ->
-          err
 
     api.get_list_by_id = (id) ->
       fitedb.get_list_by_id id
         .then (data) ->
           data
-        .catch (err) ->
-          err
 
     api.begin_transaction = () ->
       fitedb.begin_transaction()
         .then (data) ->
           data
-        .catch (err) ->
-          console.log err
-          err
 
     api.rollback_transaction = () ->
       fitedb.rollback_transaction()
         .then (data) ->
           data
-        .catch (err) ->
 
     api.fetch_all_lists = () ->
       fitedb.fetch_all_lists()
         .then (data) ->
           data
+
+    api.activate_pending_list = () ->
+      fitedb.activate_pending()
+        .then (data) ->
+          console.log data
+          data
         .catch (err) ->
-          err
+          throw err
 
     q.resolve fitedb
+
+
 
