@@ -93,7 +93,7 @@ module.exports = (db) ->
 
     get_wrapper util.format(query_s, id)
 
-  fetch_all_lists = () ->
+  fetch_all_pending_lists = () ->
     query_s = "SELECT name, listid
                FROM fitelist
                WHERE is_active = 0
@@ -108,10 +108,17 @@ module.exports = (db) ->
     db.exec 'ROLLBACK'
 
   activate_pending = () ->
+    list = null
     get_last_pending_list()
-      .then (list) ->
+      .then (new_list) ->
+        list = new_list
         query_s = 'UPDATE fitelist SET is_active = 1 WHERE listid = %d'
         all_wrapper util.format(query_s, list.listid)
+      .then (rows) ->
+        get_list_by_id(list.listid)
+      .then (rows) ->
+        clear_old_s = 'UPDATE fitelist SET is_active = 0 WHERE listid != %d'
+        all_wrapper util.format(clear_old_s, list.listid)
 
   api = {
     get_current_list: get_current_list
@@ -122,7 +129,7 @@ module.exports = (db) ->
     get_row_count: get_row_count
     begin_transaction: begin_transaction
     rollback_transaction: rollback_transaction
-    fetch_all_lists: fetch_all_lists
+    fetch_all_pending_lists: fetch_all_pending_lists
     activate_pending: activate_pending
   }
 

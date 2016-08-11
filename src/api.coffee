@@ -61,15 +61,14 @@ module.exports = (api) ->
         .then (data) ->
           data
 
-    api.fetch_all_lists = () ->
-      fitedb.fetch_all_lists()
+    api.fetch_all_pending_lists = () ->
+      fitedb.fetch_all_pending_lists()
         .then (data) ->
           data
 
     api.activate_pending_list = () ->
       fitedb.activate_pending()
         .then (data) ->
-          console.log data
           data
         .catch (err) ->
           throw err

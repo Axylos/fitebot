@@ -92,21 +92,27 @@ describe 'db api', ->
       api.create_list('foo')
         .then () ->
           api.create_list('bar')
-        .then (data) ->
-          api.get_pending_list()
-        .then (data) ->
+        .then () ->
+          api.fetch_all_pending_lists()
+        .then (pending_lists) ->
+          assert.ok(pending_lists.length == 2)
           api.activate_pending_list()
         .then () ->
           api.activate_pending_list()
         .then () ->
-          api.fetch_all_lists()
+          api.fetch_all_pending_lists()
         .then (data) ->
-          console.log 'called'
-          console.log data
+          assert.ok(data.length == 1)
           api.get_pending_list()
         .then (list) ->
-          console.log 'here'
-          console.log list
+          assert.ok(list.name == 'bar')
+          assert.ok(list.is_active == 0)
+          api.get_list_by_id(1)
+        .then (list) ->
+          assert.ok(list.is_active = 1)
+
+        .catch (err) ->
+          throw err
 
     it 'gets current list when there is one', ->
       @api.get_current_list().then (data) ->
@@ -186,11 +192,11 @@ describe 'db api2', ->
           assert.equal(new_list.name, 'biz')
 
 
-    it.only 'can fetch all lists', ->
+    it 'can fetch all lists', ->
       api = @api
       api.create_list('another')
         .then () ->
-          api.fetch_all_lists()
+          api.fetch_all_pending_lists()
         .then (lists) ->
           assert.ok(lists.length > 0)
 
